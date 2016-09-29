@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+
+    <script type="text/javascript" src="https://scdn.cxense.com/cx.js"></script>
+    <script type="text/javascript">
+        cX.setSiteId('xxxxxxxxxxx'); // TODO: Set your site ID here
+        cX.sendPageViewEvent();
+    </script>
+
+</head>
+<body>
+
+    <h1 id="message">...</h1>
+
+    <script type="text/javascript">
+        cX.callQueue.push(['invoke', function() {
+
+            function tryMap() {
+                var args = cX.parseUrlArgs();
+                $.ajax({
+                    method: 'post',
+                    url: 'map',
+                    dataType: 'json',
+                    data: {cxId: cX.getUserId, id: args.id, type: args.type},
+                    success: function (response) {
+                        if (response.result === 'OK') {
+                            document.getElementById('message').innerHTML = 'Success! You may now close this window.';
+                        } else {
+                            document.getElementById('message').innerHTML = document.getElementById('message').innerHTML + '.';
+                            cX.sendPageViewEvent({ location: location.href + '&retryTime=' + new Date().getTime()});
+                            setTimeout(function () {
+                                tryMap();
+                            }, 1000)
+                        }
+                    }
+                });
+            }
+            document.getElementById('message').innerHTML = 'Mapping, please wait..';
+            tryMap();
+        }]);
+    </script>
+
+</body>
+</html>

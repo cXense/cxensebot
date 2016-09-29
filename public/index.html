@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style type="text/css">
+        body { background-color: #fafafa; }
+        #panel { width: 914px; }
+        #conversation { border: 1px solid black; width: 600px; height: 300px; display: inline-block; font-size: large; margin-left: 10px; background-color: white; overflow: auto; }
+        #avatar { float: left; width: 300px; height: 300px; border: 0px solid black; }
+        #message {width: 910px; font-size: x-large; }
+        #sendButton { float: right; font-size: large; }
+    </style>
+    <script src="https://scdn.cxense.com/cx.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+
+    <!-- Cxense script begin -->
+    <script type="text/javascript">
+        var cX = cX || {}; cX.callQueue = cX.callQueue || [];
+        cX.callQueue.push(['setSiteId', 'xxxxxxxxxxxx']); // TODO: Set your site ID here
+        cX.callQueue.push(['sendPageViewEvent']);
+    </script>
+    <!-- Cxense script end -->
+
+</head>
+<body>
+
+    <h1>Hello from CxenseBot!</h1>
+
+    <div id="panel">
+
+        <div id="conversation">Hello!</div>
+        <img id="avatar" src="img/cxesebot_avator.png">
+
+        <br>
+        <br>
+        <br>
+
+        <form id="messageForm">
+            <input id="message" type="text" autocomplete="off"><br>
+            <button id="sendButton" type="submit">Send</button>
+        </form>
+        <button id="speakButton" onclick="stop = false; recognition.start();">Speak</button>
+        <button onclick="stop = true; recognition.stop();">Stop</button>
+
+        <script type="text/javascript">
+            var stop = false;
+            var conversationHtml = '';
+            function sendChatMessage () {
+                var newMessage = document.getElementById('message').value;
+                conversationHtml += '<b>You: </b>' + newMessage + '<br>\n';
+                document.getElementById('conversation').innerHTML = conversationHtml + '<br>\n';
+                document.getElementById('message').value = '';
+
+                $.ajax({
+                    method: 'post',
+                    url: 'message',
+                    dataType: 'json',
+                    data: { text: newMessage, cxId: cX.getUserId() },
+                    success: function(result){
+                        var htmlText = result.text.replace(/\n/g, '<br>\n').replace(/#/g, '\u258A');
+                        conversationHtml += '<b>CxenseBot: </b>' + htmlText + '<br>\n';
+                        document.getElementById('conversation').innerHTML = conversationHtml + '<br>\n';
+
+                    }
+                });
+
+                return false;
+            };
+            document.getElementById('messageForm').onsubmit = sendChatMessage;
+
+            window.setInterval(function() {
+                var elem = document.getElementById('conversation');
+                elem.scrollTop = elem.scrollHeight;
+            }, 500);
+
+
+            var ignore_onend, recognizing;
+            var recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.continuous = true;
+            recognition.interimResults = true;
+
+            recognition.onstart = function() {
+                recognizing = true;
+            };
+
+            recognition.onerror = function(event) {
+                if (event.error == 'no-speech') {
+                    ignore_onend = true;
+                }
+                if (event.error == 'audio-capture') {
+                    ignore_onend = true;
+                }
+                if (event.error == 'not-allowed') {
+                    ignore_onend = true;
+                }
+            };
+
+            recognition.onend = function() {
+                recognizing = false;
+                if (!stop) {
+                   recognition.start();
+                }
+                if (ignore_onend) {
+                    return;
+                }
+                if (!window.final_transcript) {
+                    return;
+                }
+            };
+
+            recognition.onresult = function(event) {
+                var interim_transcript = '';
+                if (typeof(event.results) == 'undefined') {
+                    recognition.onend = null;
+                    recognition.stop();
+                    // upgrade();
+                    return;
+                }
+                var interim = '';
+                for (var i = event.resultIndex; i < event.results.length; ++i) {
+                    if (event.results[i].isFinal) {
+                        var transcript = ('' + event.results[i][0].transcript).toLowerCase().trim();
+                        console.log('Final: |' + transcript + '|');
+
+                        document.getElementById('message').value = transcript;
+                        recognition.stop();
+                        sendChatMessage();
+                    } else {
+                        interim += event.results[i][0].transcript;
+                        console.log('Interim: ' + event.results[i][0].transcript);
+                    }
+                    if (interim) {
+                        document.getElementById('message').value = interim;
+                    }
+                }
+            };
+        </script>
+    </div>
+
+</body>
+</html>

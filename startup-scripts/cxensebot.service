@@ -1,0 +1,17 @@
+[Unit]
+Description=Job that runs the CxenseBot daemon
+
+[Service]
+WorkingDirectory=/home/nodejs/cxensebot/
+ExecStart=/usr/bin/nodejs /home/nodejs/cxensebot/server.js
+Restart=always
+RestartSec=3
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=cxensebot
+User=nodejs
+Group=nodejs
+Environment=NODE_ENV=production
+
+[Install]
+WantedBy=multi-user.target
