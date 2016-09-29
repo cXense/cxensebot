@@ -1,0 +1,9 @@
+# NPM-managed dependencies
+node_modules
+
+# IDE files (WebStorm)
+.idea
+
+# Runtime files
+server.log
+
