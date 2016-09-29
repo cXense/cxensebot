@@ -5,6 +5,8 @@
 Cxensebot is an example implementation of a chatbot that can communicate on Slack, Facebook Messenger and on any web page, and use the full power of the CXense APIs for its responses.
 Cxensebot also links the identities from the various platforms so that the system can know that the user from Slack and the user from Facebook is actualy the same user.
 
+The example uses BotKit for the multi-platform support and wit.ai for the natural language text parsing.
+
 
 ##### The main program 
 
