@@ -20,7 +20,7 @@ npm install
 
 You can then run the program like this
 ~~~~
-node cxensebot.js
+node server.js
 ~~~~
 
 
